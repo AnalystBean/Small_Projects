@@ -1,74 +1,102 @@
 import pygame
 
-# Initialize pygame and create window
+# Initialize pygame
 pygame.init()
-screen = pygame.display.set_mode((500, 500))
-pygame.display.set_caption("Pong")
 
-# Create the ball and paddles
-ball = pygame.Surface((10, 10))
-ball.fill((255, 255, 255))
-ball_rect = ball.get_rect(center=(250, 250))
+# Set the screen size
+size = (700, 500)
+screen = pygame.display.set_mode(size)
 
-left_paddle = pygame.Surface((10, 50))
-left_paddle.fill((255, 255, 255))
-left_paddle_rect = left_paddle.get_rect(midleft=(10, 250))
+# Set the title of the window
+pygame.display.set_caption("Pong Game")
 
-right_paddle = pygame.Surface((10, 50))
-right_paddle.fill((255, 255, 255))
-right_paddle_rect = right_paddle.get_rect(midright=(490, 250))
+# Set the paddles and ball starting positions
+paddle1_pos = [20, 200]
+paddle2_pos = [660, 200]
+ball_pos = [345, 195]
 
-# Set the ball's initial velocity
-ball_velocity = [5, 5]
+# Set the speed of the ball
+ball_speed = [5, 5]
 
-# Main game loop
+# Set the paddles' speed
+paddle1_speed = 0
+paddle2_speed = 0
+
+# Set the colors
+white = (255, 255, 255)
+black = (0, 0, 0)
+
+# Set the font
+font = pygame.font.Font(None, 30)
+
+# Set the game loop
 running = True
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-
-    # Move the paddles based on user input
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_w]:
-        left_paddle_rect.y -= 5
-    if keys[pygame.K_s]:
-        left_paddle_rect.y += 5
-    if keys[pygame.K_UP]:
-        right_paddle_rect.y -= 5
-    if keys[pygame.K_DOWN]:
-        right_paddle_rect.y += 5
-
-    # Keep the paddles on the screen
-    if left_paddle_rect.top < 0:
-        left_paddle_rect.top = 0
-    if left_paddle_rect.bottom > 500:
-        left_paddle_rect.bottom = 500
-    if right_paddle_rect.top < 0:
-        right_paddle_rect.top = 0
-    if right_paddle_rect.bottom > 500:
-        right_paddle_rect.bottom = 500
-
-    # Move the ball
-    ball_rect = ball_rect.move(ball_velocity)
-
-    # Check for collisions with the paddles
-    if ball_rect.colliderect(left_paddle_rect) or ball_rect.colliderect(right_paddle_rect):
-        ball_velocity[0] = -ball_velocity[0]
-
-    # Check for collisions with the top and bottom of the screen
-    if ball_rect.top < 0 or ball_rect.bottom > 500:
-        ball_velocity[1] = -ball_velocity[1]
-
-    # Clear the screen
-    screen.fill((0, 0, 0))
-
-    # Draw the ball and paddles
-    screen.blit(ball, ball_rect)
-    screen.blit(left_paddle, left_paddle_rect)
-    screen.blit(right_paddle, right_paddle_rect)
-
-    # Update the display
-    pygame.display.flip()
-
     
+    # Move the paddles
+    paddle1_pos[1] += paddle1_speed
+    paddle2_pos[1] += paddle2_speed
+    
+    # Move the ball
+    ball_pos[0] += ball_speed[0]
+    ball_pos[1] += ball_speed[1]
+    
+    # Check for ball hitting the top or bottom of the screen
+    if ball_pos[1] <= 0 or ball_pos[1] >= 490:
+        ball_speed[1] = -ball_speed[1]
+    
+    # Check for ball hitting the paddles
+    if (ball_pos[0] <= paddle1_pos[0] + 20 and ball_pos[1] >= paddle1_pos[1] and ball_pos[1] <= paddle1_pos[1] + 60) or (ball_pos[0] >= paddle2_pos[0] and ball_pos[1] >= paddle2_pos[1] and ball_pos[1] <= paddle2_pos[1] + 60):
+        ball_speed[0] = -ball_speed[0]
+    
+    # Check for ball going past the paddles
+    if ball_pos[0] <= 0:
+        running = False
+        message = font.render("Player 2 wins!", True, white)
+        screen.blit(message, (250, 250))
+        pygame.display.flip()
+        pygame.time.wait(3000)
+    elif ball_pos[0] >= 680:
+        running = False
+        message = font.render("Player 1 wins!", True, white)
+        screen.blit(message, (250, 250))
+        pygame.display.flip()
+        pygame.time.wait(3000)
+    
+    # Clear the screen
+    screen.fill(black)
+    
+    # Draw the paddles and the ball
+    pygame.draw.rect(screen, white, (paddle1_pos[0], paddle1_pos[1], 20, 60))
+    pygame.draw.rect(screen, white, (paddle2_pos[0], paddle2_pos[1], 20, 60))
+    pygame.draw.circle(screen, white, (int(ball_pos[0]), int(ball_pos[1])), 10)
+    
+        # Update the screen
+    pygame.display.flip()
+    
+    # Control the speed of the game
+    pygame.time.wait(10)
+    
+    # Get the keys pressed
+    keys = pygame.key.get_pressed()
+    
+    # Move the paddles based on the keys pressed
+    if keys[pygame.K_UP]:
+        paddle2_speed = -5
+    elif keys[pygame.K_DOWN]:
+        paddle2_speed = 5
+    else:
+        paddle2_speed = 0
+        
+    if keys[pygame.K_w]:
+        paddle1_speed = -5
+    elif keys[pygame.K_s]:
+        paddle1_speed = 5
+    else:
+        paddle1_speed = 0
+
+# Exit pygame
+pygame.quit()
